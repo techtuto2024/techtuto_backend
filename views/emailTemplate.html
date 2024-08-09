@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to TechTuto</title>
+  </head>
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    "
+  >
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="background-color: #f8f8f8; border-radius: 5px"
+    >
+      <tr>
+        <td style="padding: 20px; text-align: center">
+          <!-- <img
+            src="/api/placeholder/200/80"
+            alt="TechTuto Logo"
+            style="max-width: 200px; height: auto"
+          /> -->
+          <!-- TODO - Add Logo -->
+          <h1>TechTuto</h1>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 20px">
+          <h1 style="color: #3498db; margin-bottom: 20px">
+            Welcome to TechTuto!
+          </h1>
+          <p>Hello {{name}},</p>
+          <p>
+            Your account has been created successfully. Here are your account
+            details:
+          </p>
+          <table
+            style="
+              width: 100%;
+              background-color: #ffffff;
+              border-radius: 5px;
+              margin-bottom: 20px;
+            "
+          >
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid #eee">
+                <strong>Email:</strong>
+              </td>
+              <td style="padding: 10px; border-bottom: 1px solid #eee">
+                {{email}}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 10px"><strong>Password:</strong></td>
+              <td style="padding: 10px">{{password}}</td>
+            </tr>
+          </table>
+          <p>
+            Please keep these details safe and change your password after your
+            first login.
+          </p>
+          <p
+            style="
+              background-color: #e74c3c;
+              color: #ffffff;
+              padding: 10px;
+              border-radius: 5px;
+            "
+          >
+            For security reasons, we recommend changing your password
+            immediately after logging in for the first time.
+          </p>
+          <p>
+            If you have any questions or need assistance, please don't hesitate
+            to contact our support team.
+          </p>
+          <p>Best regards,<br />Team TechTuto</p>
+        </td>
+      </tr>
+      <tr>
+        <td
+          style="
+            background-color: #3498db;
+            color: #ffffff;
+            text-align: center;
+            padding: 10px;
+            border-radius: 0 0 5px 5px;
+          "
+        >
+          <p style="margin: 0">&copy; 2024 TechTuto. All rights reserved.</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
