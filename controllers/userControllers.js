@@ -89,15 +89,6 @@ export const registerUser = TryCatch(async (req, res) => {
     password,
   });
 
-  //   const subject = `${name + "'s"} Account Details`;
-  //   const text = `Hello ${name},\n\nYour account has been created successfully.\n\nEmail: ${email}\nPassword: ${password}\n\nPlease keep these details safe.\n\nBest regards,\nTechTuto Team`;
-
-  //   await sendRegistrationEmail({
-  //     email: user.email,
-  //     subject: subject,
-  //     message: text,
-  //   });
-
   const subject = `Welcome to TechTuto, ${name}!`;
   const emailTemplate = fs.readFileSync("views/emailTemplate.html", "utf-8");
   const compiledTemplate = handlebars.compile(emailTemplate);
