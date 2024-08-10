@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cloudinary from "cloudinary";
+import cookieParser from "cookie-parser";
 
 import { connectDB } from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -16,6 +17,7 @@ cloudinary.v2.config({
 });
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api/v1/user", userRoutes);
 
