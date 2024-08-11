@@ -41,22 +41,29 @@
         .highlight {
             font-weight: bold;
         }
-        .class-link {
+        .class-details {
             background-color: #f0f7ff;
             border-radius: 5px;
             margin-bottom: 20px;
             padding: 20px;
-            text-align: center;
         }
-        .class-link p {
-            font-size: 18px;
+        .class-details p {
+            font-size: 16px;
             margin: 0 0 10px 0;
         }
+        .class-link {
+            text-align: center;
+            margin-top: 20px;
+        }
         .class-link a {
-            color: #007bff;
+            display: inline-block;
+            background-color: #007bff;
+            color: #ffffff;
             text-decoration: none;
             font-weight: bold;
             font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 5px;
         }
         .footer {
             text-align: center;
@@ -79,9 +86,12 @@
             <h1>Your Class Details</h1>
             <p>Dear <span class="highlight">{{recipientName}}</span>,</p>
             <p>You have been assigned a new class. Here are the details:</p>
-            <div class="class-link">
-                <p>Your Class Link:</p>
-                <a href="{{classLink}}">Join Class</a>
+            <div class="class-details">
+                <p><strong>Date:</strong> {{classDate}}</p>
+                <p><strong>Time:</strong> {{classTime}}</p>
+                <div class="class-link">
+                    <a href="{{classLink}}">Join Class</a>
+                </div>
             </div>
             <p>Please make sure to join the class on time. If you have any questions or concerns, don't hesitate to reach out to our support team.</p>
             <p>Best regards,<br>TechTuto Team</p>

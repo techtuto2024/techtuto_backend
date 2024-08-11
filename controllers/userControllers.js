@@ -3,6 +3,7 @@ import cloudinary from "cloudinary";
 import handlebars from "handlebars";
 import fs from "fs";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 import { userSchema } from "../models/userModel.js";
 
@@ -189,10 +190,10 @@ export const logoutUser = TryCatch(async (req, res) => {
 
 // Send class details
 export const sendClassDetails = TryCatch(async (req, res) => {
-  const { studentId, mentorId, classLink } = req.body;
+  const { studentId, mentorId, classLink, classDate, classTime } = req.body;
 
   // Validate input
-  if (!studentId || !mentorId || !classLink) {
+  if (!studentId || !mentorId || !classLink || !classDate || !classTime) {
     return res.status(400).json({
       success: false,
       message: "Please provide studentId, mentorId, and classLink",
@@ -247,5 +248,109 @@ export const sendClassDetails = TryCatch(async (req, res) => {
     success: true,
     message: "Class details sent successfully to both student and mentor",
     classLink,
+    classDate,
+    classTime,
   });
+});
+
+// Request Password Reset
+export const requestPasswordReset = TryCatch(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  const collections = ["students", "mentors", "managers"];
+  const user = await checkExistingUserAcrossCollections({ email }, collections);
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // Generate reset token
+  const resetToken = crypto.randomBytes(20).toString("hex");
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // Set token expiration (1 hour from now)
+  const resetPasswordExpire = Date.now() + 3600000; // 1 hour
+
+  // Save token to user document
+  const UserModel = getDynamicUserModel(user.role + "s");
+  await UserModel.findByIdAndUpdate(user._id, {
+    resetPasswordToken,
+    resetPasswordExpire,
+  });
+
+  // Create reset URL
+  const resetUrl = `${process.env.FRONTEND_URL}/resetPassword/${resetToken}`;
+
+  // Email content
+  const message = `
+    You are receiving this email because you (or someone else) has requested the reset of a password. 
+    Please make a PUT request to: \n\n ${resetUrl}
+  `;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "Password Reset Request",
+      message,
+    });
+
+    res.status(200).json({ message: "Password reset email sent" });
+  } catch (error) {
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    return res.status(500).json({ message: "Email could not be sent" });
+  }
+});
+
+// Reset Password
+export const resetPassword = TryCatch(async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  if (!token || !password) {
+    return res
+      .status(400)
+      .json({ message: "Token and new password are required" });
+  }
+
+  // Hash token
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  const collections = ["students", "mentors", "managers"];
+  const user = await checkExistingUserAcrossCollections(
+    {
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    },
+    collections
+  );
+
+  if (!user) {
+    return res.status(400).json({ message: "Invalid or expired token" });
+  }
+
+  // Set new password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  const UserModel = getDynamicUserModel(user.role + "s");
+  await UserModel.findByIdAndUpdate(user._id, {
+    password: hashedPassword,
+    resetPasswordToken: undefined,
+    resetPasswordExpire: undefined,
+  });
+
+  res.status(200).json({ message: "Password reset successful" });
 });
