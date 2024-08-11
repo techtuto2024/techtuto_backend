@@ -196,7 +196,7 @@ export const sendClassDetails = TryCatch(async (req, res) => {
   if (!studentId || !mentorId || !classLink || !classDate || !classTime) {
     return res.status(400).json({
       success: false,
-      message: "Please provide studentId, mentorId, and classLink",
+      message: "Please provide all details",
     });
   }
 
