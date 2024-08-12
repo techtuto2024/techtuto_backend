@@ -229,6 +229,8 @@ export const sendClassDetails = TryCatch(async (req, res) => {
     const emailData = {
       recipientName: recipient.name,
       classLink: classLink,
+      classDate: classDate,
+      classTime: classTime
     };
     const htmlContent = compiledTemplate(emailData);
 
