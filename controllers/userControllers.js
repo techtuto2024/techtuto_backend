@@ -51,17 +51,6 @@ export const registerUser = TryCatch(async (req, res) => {
     }
   }
 
-  if (existingUsers.length > 0) {
-    // Delete existing users
-    for (const { collectionName, user } of existingUsers) {
-      const model = mongoose.model(collectionName);
-      await model.deleteOne({ _id: user._id });
-    }
-    console.log(
-      `Deleted ${existingUsers.length} existing user(s) with this email.`
-    );
-  }
-
   // Generate custom user ID and password
   const userId = `${email.split("@")[0] + "_".toLowerCase()}${role}@techtuto`;
   const password = `${
