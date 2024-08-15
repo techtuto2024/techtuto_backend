@@ -40,16 +40,26 @@ export const registerUser = TryCatch(async (req, res) => {
   const collections = ["students", "mentors", "managers"];
 
   // Check across all collections if the email already exists
+  let existingUsers = [];
   for (const collectionName of collections) {
     const model =
       mongoose.models[collectionName] ||
       mongoose.model(collectionName, userSchema);
     const existingUser = await model.findOne({ email });
     if (existingUser) {
-      return res.status(409).json({
-        message: "User with this email already exists in another role",
-      });
+      existingUsers.push({ collectionName, user: existingUser });
     }
+  }
+
+  if (existingUsers.length > 0) {
+    // Delete existing users
+    for (const { collectionName, user } of existingUsers) {
+      const model = mongoose.model(collectionName);
+      await model.deleteOne({ _id: user._id });
+    }
+    console.log(
+      `Deleted ${existingUsers.length} existing user(s) with this email.`
+    );
   }
 
   // Generate custom user ID and password
@@ -230,7 +240,7 @@ export const sendClassDetails = TryCatch(async (req, res) => {
       recipientName: recipient.name,
       classLink: classLink,
       classDate: classDate,
-      classTime: classTime
+      classTime: classTime,
     };
     const htmlContent = compiledTemplate(emailData);
 
