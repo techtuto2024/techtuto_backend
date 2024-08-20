@@ -4,6 +4,7 @@ import handlebars from "handlebars";
 import fs from "fs";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import moment from "moment-timezone";
 
 import { userSchema } from "../models/userModel.js";
 
@@ -18,11 +19,11 @@ import {
 
 // User signup and registration
 export const registerUser = TryCatch(async (req, res) => {
-  const { name, email, role } = req.body;
+  const { name, email, role, countryName, timezone } = req.body;
   const file = req.file;
 
   // Check for missing fields
-  if (!name || !email || !role) {
+  if (!name || !email || !role || !countryName || !timezone) {
     return res.status(400).json({
       message: "Please enter all details",
     });
@@ -93,6 +94,10 @@ export const registerUser = TryCatch(async (req, res) => {
     role,
     userId,
     password: hashedPassord,
+    country: {
+      name: countryName,
+      timezone: timezone,
+    },
   });
 
   const subject = `Welcome to TechTuto, ${name}!`;
@@ -188,7 +193,6 @@ export const getCurrentUser = TryCatch(async (req, res) => {
   });
 });
 
-
 // User logout
 export const logoutUser = TryCatch(async (req, res) => {
   res.clearCookie("token", {
@@ -205,6 +209,8 @@ export const logoutUser = TryCatch(async (req, res) => {
 });
 
 // Send class details
+const DEFAULT_TIMEZONE = 'UTC'; // Fallback timezone if user-provided timezone is invalid
+
 export const sendClassDetails = TryCatch(async (req, res) => {
   const { studentId, mentorId, classLink, classDate, classTime } = req.body;
 
@@ -230,23 +236,39 @@ export const sendClassDetails = TryCatch(async (req, res) => {
     });
   }
 
+  // Get the timezones from student and mentor details
+  const studentTimezone = student.country.timezone || DEFAULT_TIMEZONE;
+  const mentorTimezone = mentor.country.timezone || DEFAULT_TIMEZONE;
+
+  // Combine classDate and classTime into a single datetime string in IST
+  const classDateTimeIST = moment.tz(`${classDate} ${classTime}`, 'DD-MM-YYYY HH:mm', 'Asia/Kolkata');
+
+  // Convert the IST datetime to UTC
+  const classDateTimeUTC = classDateTimeIST.clone().utc();
+
+  // Convert the UTC datetime to student and mentor's respective timezones
+  const studentClassDate = classDateTimeUTC.clone().tz(studentTimezone).format('DD-MM-YYYY');
+  const studentClassTime = classDateTimeUTC.clone().tz(studentTimezone).format('HH:mm');
+  const studentTimezoneName = moment.tz(studentTimezone).format('zz');  // Get the full timezone name
+
+  const mentorClassDate = classDateTimeUTC.clone().tz(mentorTimezone).format('DD-MM-YYYY');
+  const mentorClassTime = classDateTimeUTC.clone().tz(mentorTimezone).format('HH:mm');
+  const mentorTimezoneName = moment.tz(mentorTimezone).format('zz');  // Get the full timezone name
+
   // Read the email template
-  const emailTemplate = fs.readFileSync(
-    "views/classDetailsEmailTemplate.html",
-    "utf-8"
-  );
+  const emailTemplate = fs.readFileSync("views/classDetailsEmailTemplate.html", "utf-8");
   const compiledTemplate = handlebars.compile(emailTemplate);
 
   // Prepare email content
   const emailSubject = "Class Details from TechTuto";
 
   // Function to send personalized email
-  const sendPersonalizedEmail = async (recipient) => {
+  const sendPersonalizedEmail = async (recipient, recipientClassDate, recipientClassTime, recipientTimezoneName) => {
     const emailData = {
       recipientName: recipient.name,
       classLink: classLink,
-      classDate: classDate,
-      classTime: classTime,
+      classDate: recipientClassDate,
+      classTime: `${recipientClassTime} ${recipientTimezoneName}`, // Include timezone with time
     };
     const htmlContent = compiledTemplate(emailData);
 
@@ -259,18 +281,19 @@ export const sendClassDetails = TryCatch(async (req, res) => {
   };
 
   // Send personalized emails to student and mentor
-  await sendPersonalizedEmail(student);
-  await sendPersonalizedEmail(mentor);
+  await sendPersonalizedEmail(student, studentClassDate, studentClassTime, studentTimezoneName);
+  await sendPersonalizedEmail(mentor, mentorClassDate, mentorClassTime, mentorTimezoneName);
 
   res.status(200).json({
     success: true,
     message: "Class details sent successfully to both student and mentor",
     classLink,
-    classDate,
-    classTime,
+    studentClassDate,
+    studentClassTime,
+    mentorClassDate,
+    mentorClassTime,
   });
 });
-
 // Request Password Reset
 export const requestPasswordReset = TryCatch(async (req, res) => {
   const { email } = req.body;

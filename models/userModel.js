@@ -30,6 +30,15 @@ export const userSchema = new mongoose.Schema({
   password: {
     type: String,
   },
+  country: {
+    name: {
+      type: String,
+    },
+    timezone: {
+      type: String,
+      default: "UTC",
+    },
+  },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
 });
