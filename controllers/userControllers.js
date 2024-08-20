@@ -16,6 +16,8 @@ import {
   checkExistingUserAcrossCollections,
   getDynamicUserModel,
 } from "../utils/dynamicCollectionHandler.js";
+import ClassDetailsModel from '../models/classDetailsModel.js';
+
 
 // User signup and registration
 export const registerUser = TryCatch(async (req, res) => {
@@ -284,6 +286,21 @@ export const sendClassDetails = TryCatch(async (req, res) => {
   await sendPersonalizedEmail(student, studentClassDate, studentClassTime, studentTimezoneName);
   await sendPersonalizedEmail(mentor, mentorClassDate, mentorClassTime, mentorTimezoneName);
 
+  // Save class details to the database
+  await ClassDetailsModel.create({
+    studentId,
+    mentorId,
+    classLink,
+    classDate,
+    classTime,
+    studentTimezone,
+    mentorTimezone,
+    studentClassDate,
+    studentClassTime,
+    mentorClassDate,
+    mentorClassTime,
+  });
+
   res.status(200).json({
     success: true,
     message: "Class details sent successfully to both student and mentor",
@@ -294,6 +311,7 @@ export const sendClassDetails = TryCatch(async (req, res) => {
     mentorClassTime,
   });
 });
+
 // Request Password Reset
 export const requestPasswordReset = TryCatch(async (req, res) => {
   const { email } = req.body;
