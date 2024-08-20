@@ -150,9 +150,6 @@ export const loginUser = TryCatch(async (req, res) => {
     }
 
     const isPasswordMatched = await bcrypt.compare(password, user.password);
-    console.log(password, typeof password);
-    console.log(user.password, typeof user.password);
-    console.log("Password Matched:", isPasswordMatched);
 
     if (!isPasswordMatched) {
       return res.status(400).json({
@@ -177,9 +174,12 @@ export const loginUser = TryCatch(async (req, res) => {
 
 // User logout
 export const logoutUser = TryCatch(async (req, res) => {
-  res.cookie("token", null, {
-    expires: new Date(Date.now()),
+  res.clearCookie("token", {
     httpOnly: true,
+    secure: false, // Only use secure in production
+    sameSite: "lax", // Use strict after deploying
+    path: "/",
+    // domain: "domain.com" Specify domain after hosting!
   });
   res.status(200).json({
     success: true,
