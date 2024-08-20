@@ -24,4 +24,8 @@ router.post(
 router.post("/requestResetPassword", requestPasswordReset);
 router.put("/resetPassword/:token", resetPassword);
 
+router.get('/verifytoken', isUserAuthenticated, (req, res) => {
+  res.status(200).json({ valid: true });
+});
+
 export default router;
