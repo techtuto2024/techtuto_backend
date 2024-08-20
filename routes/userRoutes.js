@@ -1,6 +1,7 @@
 import express from "express";
 import uploadFile from "../middlewares/multer.js";
 import {
+  getCurrentUser,
   loginUser,
   logoutUser,
   registerUser,
@@ -24,8 +25,9 @@ router.post(
 router.post("/requestResetPassword", requestPasswordReset);
 router.put("/resetPassword/:token", resetPassword);
 
-router.get('/verifytoken', isUserAuthenticated, (req, res) => {
+router.get("/verifytoken", isUserAuthenticated, (req, res) => {
   res.status(200).json({ valid: true });
 });
+router.get("/currentuser", isUserAuthenticated, getCurrentUser);
 
 export default router;

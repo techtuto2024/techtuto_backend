@@ -172,6 +172,23 @@ export const loginUser = TryCatch(async (req, res) => {
   }
 });
 
+// Get currently logged in user
+export const getCurrentUser = TryCatch(async (req, res) => {
+  // `req.user` should already be populated by the `isAuthenticated` middleware
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: "Not authenticated",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    user: req.user,
+  });
+});
+
+
 // User logout
 export const logoutUser = TryCatch(async (req, res) => {
   res.clearCookie("token", {
