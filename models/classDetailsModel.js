@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const classDetailsSchema = new mongoose.Schema({
   studentId: { type: String, required: true },
   mentorId: { type: String, required: true },
+  subjectName: {type: String, required: true},
   classLink: { type: String, required: true },
   classDate: { type: String, required: true },
   classTime: { type: String, required: true },

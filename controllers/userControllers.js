@@ -16,8 +16,7 @@ import {
   checkExistingUserAcrossCollections,
   getDynamicUserModel,
 } from "../utils/dynamicCollectionHandler.js";
-import ClassDetailsModel from '../models/classDetailsModel.js';
-
+import ClassDetailsModel from "../models/classDetailsModel.js";
 
 // User signup and registration
 export const registerUser = TryCatch(async (req, res) => {
@@ -50,7 +49,9 @@ export const registerUser = TryCatch(async (req, res) => {
       mongoose.model(collectionName, userSchema);
     const existingUser = await model.findOne({ email });
     if (existingUser) {
-      existingUsers.push({ collectionName, user: existingUser });
+      return res.status(400).json({
+        message: "User with this email already exists",
+      });
     }
   }
 
@@ -211,13 +212,14 @@ export const logoutUser = TryCatch(async (req, res) => {
 });
 
 // Send class details
-const DEFAULT_TIMEZONE = 'UTC'; // Fallback timezone if user-provided timezone is invalid
+const DEFAULT_TIMEZONE = "UTC"; // Fallback timezone if user-provided timezone is invalid
 
 export const sendClassDetails = TryCatch(async (req, res) => {
-  const { studentId, mentorId, classLink, classDate, classTime } = req.body;
+  const { studentId, mentorId, subjectName, classLink, classDate, classTime } =
+    req.body;
 
   // Validate input
-  if (!studentId || !mentorId || !classLink || !classDate || !classTime) {
+  if (!studentId || !mentorId || !subjectName || !classLink || !classDate || !classTime) {
     return res.status(400).json({
       success: false,
       message: "Please provide all details",
@@ -243,31 +245,56 @@ export const sendClassDetails = TryCatch(async (req, res) => {
   const mentorTimezone = mentor.country.timezone || DEFAULT_TIMEZONE;
 
   // Combine classDate and classTime into a single datetime string in IST
-  const classDateTimeIST = moment.tz(`${classDate} ${classTime}`, 'DD-MM-YYYY HH:mm', 'Asia/Kolkata');
+  const classDateTimeIST = moment.tz(
+    `${classDate} ${classTime}`,
+    "DD-MM-YYYY HH:mm",
+    "Asia/Kolkata"
+  );
 
   // Convert the IST datetime to UTC
   const classDateTimeUTC = classDateTimeIST.clone().utc();
 
   // Convert the UTC datetime to student and mentor's respective timezones
-  const studentClassDate = classDateTimeUTC.clone().tz(studentTimezone).format('DD-MM-YYYY');
-  const studentClassTime = classDateTimeUTC.clone().tz(studentTimezone).format('HH:mm');
-  const studentTimezoneName = moment.tz(studentTimezone).format('zz');  // Get the full timezone name
+  const studentClassDate = classDateTimeUTC
+    .clone()
+    .tz(studentTimezone)
+    .format("DD-MM-YYYY");
+  const studentClassTime = classDateTimeUTC
+    .clone()
+    .tz(studentTimezone)
+    .format("HH:mm");
+  const studentTimezoneName = moment.tz(studentTimezone).format("zz"); // Get the full timezone name
 
-  const mentorClassDate = classDateTimeUTC.clone().tz(mentorTimezone).format('DD-MM-YYYY');
-  const mentorClassTime = classDateTimeUTC.clone().tz(mentorTimezone).format('HH:mm');
-  const mentorTimezoneName = moment.tz(mentorTimezone).format('zz');  // Get the full timezone name
+  const mentorClassDate = classDateTimeUTC
+    .clone()
+    .tz(mentorTimezone)
+    .format("DD-MM-YYYY");
+  const mentorClassTime = classDateTimeUTC
+    .clone()
+    .tz(mentorTimezone)
+    .format("HH:mm");
+  const mentorTimezoneName = moment.tz(mentorTimezone).format("zz"); // Get the full timezone name
 
   // Read the email template
-  const emailTemplate = fs.readFileSync("views/classDetailsEmailTemplate.html", "utf-8");
+  const emailTemplate = fs.readFileSync(
+    "views/classDetailsEmailTemplate.html",
+    "utf-8"
+  );
   const compiledTemplate = handlebars.compile(emailTemplate);
 
   // Prepare email content
   const emailSubject = "Class Details from TechTuto";
 
   // Function to send personalized email
-  const sendPersonalizedEmail = async (recipient, recipientClassDate, recipientClassTime, recipientTimezoneName) => {
+  const sendPersonalizedEmail = async (
+    recipient,
+    recipientClassDate,
+    recipientClassTime,
+    recipientTimezoneName
+  ) => {
     const emailData = {
       recipientName: recipient.name,
+      subjectName: subjectName,
       classLink: classLink,
       classDate: recipientClassDate,
       classTime: `${recipientClassTime} ${recipientTimezoneName}`, // Include timezone with time
@@ -283,13 +310,24 @@ export const sendClassDetails = TryCatch(async (req, res) => {
   };
 
   // Send personalized emails to student and mentor
-  await sendPersonalizedEmail(student, studentClassDate, studentClassTime, studentTimezoneName);
-  await sendPersonalizedEmail(mentor, mentorClassDate, mentorClassTime, mentorTimezoneName);
+  await sendPersonalizedEmail(
+    student,
+    studentClassDate,
+    studentClassTime,
+    studentTimezoneName
+  );
+  await sendPersonalizedEmail(
+    mentor,
+    mentorClassDate,
+    mentorClassTime,
+    mentorTimezoneName
+  );
 
   // Save class details to the database
   await ClassDetailsModel.create({
     studentId,
     mentorId,
+    subjectName,
     classLink,
     classDate,
     classTime,
@@ -305,6 +343,7 @@ export const sendClassDetails = TryCatch(async (req, res) => {
     success: true,
     message: "Class details sent successfully to both student and mentor",
     classLink,
+    subjectName,
     studentClassDate,
     studentClassTime,
     mentorClassDate,
