@@ -24,7 +24,11 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3002",
+    ],
     credentials: true,
   })
 );
@@ -34,6 +38,12 @@ app.use("/api/v1/user", classDetailsRoutes);
 app.use("/api/v1/razorpay", razorpayRoutes);
 
 const port = process.env.PORT;
+
+app.get("/", (req, res) => {
+  res.send(
+    "Hello World from TechTuto"
+  )
+})
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
