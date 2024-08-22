@@ -6,8 +6,9 @@ const generateJwt = (id, res) => {
   });
   res.cookie("token", token, {
     maxAge: 15 * 24 * 60 * 60 * 1000,
-    httpOnly: true,
-    sameSite: "strict",
+    secure: true,
+    httpOnly: false,
+    sameSite: "none",
     path: "/"
   });
 };
