@@ -2,11 +2,15 @@ import nodemailer from "nodemailer";
 
 export const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
-    service: process.env.SMTP_SERVICE,
+    // service: process.env.SMTP_SERVICE,
+    host: "smtp.hostinger.com",
+    port: 465,
+    secure: true, // Use SSL
     auth: {
       user: process.env.SMTP_MAIL,
       pass: process.env.SMTP_PASSWORD,
     },
+    // authMethod: "LOGIN",
   });
 
   const mailOptions = {
