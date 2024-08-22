@@ -7,6 +7,7 @@ import cors from "cors";
 import { connectDB } from "./config/db.js";
 import userRoutes from "./routes/userRoutes.js";
 import classDetailsRoutes from "./routes/classDetailsRoutes.js";
+import razorpayRoutes from "./routes/razorpayRoutes.js";
 
 const app = express();
 
@@ -29,8 +30,8 @@ app.use(
 );
 
 app.use("/api/v1/user", userRoutes);
-app.use('/api/v1/user', classDetailsRoutes);
-
+app.use("/api/v1/user", classDetailsRoutes);
+app.use("/api/v1/razorpay", razorpayRoutes);
 
 const port = process.env.PORT;
 

@@ -50,7 +50,7 @@ export const getClassDetails = TryCatch(async (req, res) => {
       // Assign numbers to each class
       return classes.map((classDetail, index) => ({
         ...classDetail._doc, // Spread the original document
-        classNumber: `${subjectName} #${index + 1}`,
+        classNumber: `${subjectName} Class #${index + 1}`,
       }));
     }
   );
