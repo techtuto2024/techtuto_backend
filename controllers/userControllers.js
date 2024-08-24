@@ -113,6 +113,7 @@ export const registerUser = TryCatch(async (req, res) => {
     name: user.name,
     email: user.email,
     password: password,
+    role: user.role
   };
   const htmlContent = compiledTemplate(emailData);
 
