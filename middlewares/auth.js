@@ -39,16 +39,17 @@ export const isUserAuthenticated = TryCatch(async (req, res, next) => {
 
 // Middleware to authorize roles, independent of authentication
 export const authorizeRoles = (...roles) => {
-  return async (req, res, next) => {
-    const { token } = req.cookies;
+  return TryCatch(async (req, res, next) => {
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
         message: "Please login to access this resource",
       });
     }
 
+    const token = authHeader.split(' ')[1];
     const decodedData = jwt.verify(token, process.env.JWT_SECRET);
 
     const collections = ["students", "mentors", "managers"];
@@ -76,5 +77,5 @@ export const authorizeRoles = (...roles) => {
 
     req.user = user;
     next();
-  };
+  });
 };
