@@ -28,11 +28,14 @@ app.use(
       "http://localhost:3000",
       "http://localhost:3001",
       "http://localhost:3002",
+      "https://admin.tech-tuto.com",
+      "https://nexus.tech-tuto.com"
     ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
-
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/user", classDetailsRoutes);
 app.use("/api/v1/razorpay", razorpayRoutes);
