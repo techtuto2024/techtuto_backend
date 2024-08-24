@@ -4,20 +4,21 @@ import TryCatch from "../utils/errorHandler.js";
 
 // Middleware to check if the user is authenticated
 export const isUserAuthenticated = TryCatch(async (req, res, next) => {
-  const { token } = req.cookies;
+  const authHeader = req.headers.authorization;
 
-  if (!token) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
       success: false,
       message: "Please login to access this resource",
     });
   }
 
+  const token = authHeader.split(' ')[1];
   const decodedData = jwt.verify(token, process.env.JWT_SECRET);
 
   const collections = ["students", "mentors", "managers"];
   let user = null;
-  
+
   for (const collectionName of collections) {
     const model = getDynamicUserModel(collectionName);
     user = await model.findById(decodedData.id);
@@ -34,6 +35,7 @@ export const isUserAuthenticated = TryCatch(async (req, res, next) => {
   req.user = user;
   next();
 });
+
 
 // Middleware to authorize roles, independent of authentication
 export const authorizeRoles = (...roles) => {

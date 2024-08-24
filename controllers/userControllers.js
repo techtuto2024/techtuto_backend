@@ -165,11 +165,12 @@ export const loginUser = TryCatch(async (req, res) => {
       });
     }
 
-    generateJwt(user._id, res);
+    const token = generateJwt(user._id, res);
 
     res.status(200).json({
       success: true,
       message: "User logged in",
+      token,
       user,
     });
   } catch (error) {
